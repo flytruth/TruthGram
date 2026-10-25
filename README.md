@@ -54,10 +54,13 @@ Everything else — filtering, storage, inference — stays on your hardware.
 deleted *in chats the owner is part of*. It does not intercept third-party
 chats. Use it on accounts you own.
 
+
+To create a Telegram bot token, message @BotFather on Telegram, use the command /newbot, and follow the prompts to choose a name and username for your bot. After completing these steps, BotFather will provide you with a unique bot token that you can use to authenticate your bot
+
 ## Quick start
 
 ```bash
-git clone https://github.com/{{USER}}/{{REPO}}.git
-cd {{REPO}}
+git clone https://github.com/flytruth/TruthGram
+cd TruthGram
 cp .env.example .env      # fill BOT_TOKEN, OWNER_ID; keep the generated key
 docker compose up -d
