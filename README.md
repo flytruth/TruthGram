@@ -50,7 +50,7 @@ in `plugins/hello_plugin/`.
 See [docs/BUILD.md](docs/BUILD.md) for Windows (MSVC/Ninja), Debian/Ubuntu
 (`.deb` + AppImage), Arch (`PKGBUILD`), and macOS (universal `.dmg`).
 
-Quick start (Linux, Ninja):
+Quick start (Linux):
 
 ```bash
 cmake -S . -B build -G Ninja \
