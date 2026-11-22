@@ -1,0 +1,51 @@
+Source: truthgram
+Section: net
+Priority: optional
+Maintainer: TruthGram Contributors <truthgram@example.org>
+Build-Depends: debhelper-compat (= 13),
+               cmake (>= 3.25),
+               ninja-build,
+               qt6-base-dev (>= 6.6),
+               qt6-svg-dev,
+               qt6-multimedia-dev,
+               qt6-declarative-dev,
+               qt6-wayland-dev,
+               libssl-dev (>= 3.0),
+               libsqlcipher-dev (>= 4.5),
+               libavcodec-dev,
+               libavformat-dev,
+               libavutil-dev,
+               libopus-dev,
+               librnnoise-dev,
+               libluajit-5.1-dev,
+               libtg-owt-dev,
+               libwayland-dev,
+               pkg-config,
+               python3
+Standards-Version: 4.6.2
+Homepage: https://github.com/truthgram/truthgram-desktop
+Rules-Requires-Root: no
+
+Package: truthgram
+Architecture: amd64 arm64
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         libsqlcipher0 (>= 4.5),
+         libqt6-multimedia6,
+         libqt6-wayland6,
+         librnnoise0
+Recommends: fonts-noto-core
+Suggests: tor | torsocks
+Description: Privacy-first, zero-telemetry Telegram Desktop client
+ TruthGram is a GPL-3.0 fork of telegramdesktop/tdesktop that adds a curated
+ set of privacy, UX, and power-user modules without any third-party analytics,
+ tracking, or proprietary blobs. All sync state travels through the user's own
+ Telegram Saved Messages, encrypted with AES-256-GCM keyed off the MTProto
+ auth key.
+ .
+ Built-in modules include an iOS-inspired frosted-glass UI, a detachable FFT
+ mini media player, a voice changer hooking tg_owt pre-Opus, Ghost Mode read/
+ unread controls, screenshot capture protection, a Mini App domain inspector,
+ a local Sherlock-style OSINT runner over Tor/SOCKS5, a link phishing
+ analyzer, a visual BotFather builder, P2P chess, and a Termux/local CLI IPC
+ bridge. A sandboxed plugin engine supports native .so and Lua scripts.
