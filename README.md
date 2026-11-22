@@ -9,6 +9,7 @@ upstream tdesktop **without** introducing any external analytics, tracking, or
 proprietary blobs. All sync state travels through your own Telegram Saved
 Messages, encrypted with AES-256-GCM keyed off your MTProto auth key.
 
+
 ## Highlights
 
 - **Cyber-Truth theme** — Deep Obsidian Black background, Electric Lime Green
