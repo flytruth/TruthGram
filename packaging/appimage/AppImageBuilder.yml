@@ -1,0 +1,87 @@
+# =============================================================================
+# TruthGram AppImage recipe (linuxdeploy + AppImageBuilder v2)
+# -----------------------------------------------------------------------------
+#   cd packaging/appimage && sudo ./build-appimage.sh
+# Produces: ../dist/TruthGram-x.y.z-x86_64.AppImage
+# =============================================================================
+version: 1
+
+AppDir:
+  path: ./AppDir
+
+  app_info:
+    id: org.truthgram.TruthGram
+    name: TruthGram
+    icon: truthgram
+    version: '@TRUTHGRAM_VERSION@'
+    exec: usr/bin/truthgram
+    exec_args: "$@"
+
+  runtime:
+    env:
+      GSETTINGS_SCHEMA_DIR: '$APPDIR/usr/share/glib-2.0/schemas'
+      GDK_BACKEND: x11
+      # Plugins are loaded relative to the user dir, never the AppDir, so the
+      # AppImage stays read-only and tamper-evident.
+      TRUTHGRAM_PLUGINS_DIR: '$HOME/.local/share/TruthGram/plugins'
+
+  apt:
+    arch: [amd64]
+    sources:
+      - sourceline: 'deb http://archive.ubuntu.com/ubuntu jammy main universe'
+        key_url: 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x3B4FE6ACC0B21F32'
+    include:
+      - libqt6-core6
+      - libqt6-gui6
+      - libqt6-widgets6
+      - libqt6-network6
+      - libqt6-svg6
+      - libqt6-multimedia6
+      - libqt6-opengl6
+      - libqt6-wayland6
+      - libssl3
+      - libsqlcipher0
+      - libavcodec58
+      - libavformat58
+      - libavutil56
+      - libopus0
+      - librnnoise0
+      - libwayland-client0
+      - libpulse0
+      - libstdc++6
+      - libc6
+    exclude:
+      - libqt6-test6
+      - libqt6-quick3d6
+
+  files:
+    include:
+      - usr/bin/truthgram
+      - usr/share/truthgram
+      - usr/share/applications/truthgram.desktop
+      - usr/share/icons/hicolor
+      - usr/share/doc/truthgram/copyright
+    exclude:
+      - usr/share/man
+      - usr/share/lintian
+
+  after_bundle:
+    - echo "Bundling complete. Patching rpaths..."
+    - |
+
+AppImage:
+  arch: x86_64
+  update_information: 'gh-releases-zsync|truthgram|truthgram-desktop|latest|TruthGram-*x86_64.AppImage'
+  file_name: 'TruthGram-@TRUTHGRAM_VERSION@-x86_64.AppImage'
+  desktop_file: usr/share/applications/truthgram.desktop
+  icon_file: usr/share/icons/hicolor/512x512/apps/truthgram.png
+
+# Build hooks consumed by build-appimage.sh (not parsed by AppImageBuilder
+# itself; documented here for the wrapper script).
+hooks:
+  pre_build:
+    - cmake -S ../.. -B ../../build/appimage -G Ninja -DCMAKE_BUILD_TYPE=Release -DTDESKTOP_USE_PACKAGED=ON
+    - cmake --build ../../build/appimage --target truthgram_app
+    - DESTDIR=./AppDir cmake --install ../../build/appimage
+  post_build:
+    - chmod +x AppDir/usr/bin/truthgram

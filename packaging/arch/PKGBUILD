@@ -1,0 +1,99 @@
+# Maintainer: TruthGram Contributors <truthgram@example.org>
+# This PKGBUILD builds truthgram-git from the TruthGram overlay applied onto
+# a pinned telegramdesktop/tdesktop tag.
+
+pkgname=truthgram-git
+pkgver=1.0.0.r0.g7b27344
+pkgrel=1
+pkgdesc='Privacy-first, zero-telemetry Telegram Desktop client (tdesktop fork)'
+arch=('x86_64' 'aarch64')
+url='https://github.com/truthgram/truthgram-desktop'
+license=('GPL-3.0-only')
+depends=(
+    'qt6-base' 'qt6-svg' 'qt6-multimedia' 'qt6-declarative' 'qt6-wayland'
+    'openssl' 'sqlcipher' 'ffmpeg' 'libopus' 'rnnoise' 'libtg-owt'
+    'hicolor-icon-theme' 'ttf-opensans' 'ttf-dejavu'
+    'xdg-utils'
+)
+makedepends=(
+    'git' 'cmake>=3.25' 'ninja' 'python' 'pkgconf'
+    'qt6-tools' 'wayland-protocols' 'libpulse'
+)
+optdepends=('tor: OSINT/phishing proxy support'
+            'torsocks: alternate proxy for OSINT runner')
+provides=('truthgram')
+conflicts=('truthgram' 'telegram-desktop')
+source=("git+https://github.com/truthgram/truthgram-desktop.git"
+        "git+https://github.com/telegramdesktop/tdesktop.git#tag=v5.6.3"
+        "tg_owt-audio-hook.patch::https://raw.githubusercontent.com/truthgram/truthgram-desktop/main/patches/tg_owt/0001-truthgram-audio-hook.patch")
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+options=('!lto' '!strip')  # LTO handled by CMake; preserve debug symbols
+
+pkgver() {
+    cd "$srcdir/truthgram-desktop"
+    git describe --long --tags 2>/dev/null | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g' \
+        || printf "1.0.0.r0.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "$srcdir/truthgram-desktop"
+    # Overlay TruthGram onto tdesktop by symlinking our module tree.
+    mkdir -p "$srcdir/tdesktop/Telegram/SourceFiles"
+    ln -sfn "$srcdir/truthgram-desktop/Telegram/SourceFiles/truthgram" \
+            "$srcdir/tdesktop/Telegram/SourceFiles/truthgram"
+
+    # Apply the tg_owt audio hook patch required by voice_changer.cpp.
+    cd "$srcdir"
+    if [ -d tg_owt ]; then
+        git -C tg_owt apply "$srcdir/tg_owt-audio-hook.patch" || true
+    fi
+}
+
+build() {
+    cd "$srcdir/truthgram-desktop"
+    cmake -S . -B build -G Ninja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX="/usr" \
+        -DTDESKTOP_USE_PACKAGED=ON \
+        -DTRUTHGRAM_TDESKTOP_DIR="$srcdir/tdesktop" \
+        -DTRUTHGRAM_ENABLE_LUA_PLUGINS=ON \
+        -DTRUTHGRAM_ENABLE_LTO=ON
+    cmake --build build --target truthgram_app
+}
+
+package() {
+    cd "$srcdir/truthgram-desktop"
+
+    install -Dm755 "build/bin/TruthGram" "$pkgdir/usr/bin/truthgram"
+
+    install -Dm644 "resources/themes/cyber-truth.tdesktop-theme" \
+        "$pkgdir/usr/share/truthgram/themes/cyber-truth.tdesktop-theme"
+
+    install -Dm644 "LICENSE" \
+        "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+
+    install -Dm644 "README.md" \
+        "$pkgdir/usr/share/doc/$pkgname/README.md"
+    install -Dm644 "ARCHITECTURE.md" \
+        "$pkgdir/usr/share/doc/$pkgname/ARCHITECTURE.md"
+
+    install -Dm644 /dev/stdin \
+        "$pkgdir/usr/share/applications/truthgram.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=TruthGram
+Comment=Privacy-first Telegram Desktop client
+Exec=truthgram -- %u
+Icon=truthgram
+Categories=Network;InstantMessaging;Chat;
+MimeType=x-scheme-handler/tg;x-scheme-handler/ton;
+StartupWMClass=TruthGram
+EOF
+
+    # hicolor icon placeholders (real PNGs would be committed in resources/icons)
+    for size in 16 32 48 64 128 256 512; do
+        install -d "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps"
+        # cp "resources/icons/truthgram-$size.png" \
+        #    "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps/truthgram.png"
+    done
+}

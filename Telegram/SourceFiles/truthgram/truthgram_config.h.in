@@ -1,0 +1,142 @@
+// truthgram_config.h.in
+//
+// Rendered by CMake configure_file() (at-sign-only substitution mode) into
+//   the generated/ build directory as truthgram_config.h
+// during CMake configure. Do NOT include the .in directly; the build adds
+// the generated/ directory to the include path so a bare
+//   #include "truthgram_config.h"
+// resolves to the generated copy.
+//
+// Every TRUTHGRAM_ENABLE_* flag is substituted from the matching CMake option
+// (normalized to 1 / 0 in CMakeLists.txt). The `#if !defined(...)` guard means
+// the define is only emitted when the compiler command line has not already
+// supplied it via -D, so this header stays correct whether or not
+// target_compile_definitions also passes the flag.
+//
+// TruthGram - privacy-first, zero-telemetry Telegram Desktop client
+// Copyright (C) 2026 TruthGram Contributors
+#pragma once
+
+#include "truthgram_version.h"   // generated
+
+namespace tg::truthgram {
+
+// ---- Compile-time feature flags (mirrors CMake options) --------------------
+#if !defined(TRUTHGRAM_ENABLE_IOS_UI)
+#  define TRUTHGRAM_ENABLE_IOS_UI @TRUTHGRAM_ENABLE_IOS_UI@
+#endif
+#if !defined(TRUTHGRAM_ENABLE_MINI_PLAYER)
+#  define TRUTHGRAM_ENABLE_MINI_PLAYER @TRUTHGRAM_ENABLE_MINI_PLAYER@
+#endif
+#if !defined(TRUTHGRAM_ENABLE_PLUGINS)
+#  define TRUTHGRAM_ENABLE_PLUGINS @TRUTHGRAM_ENABLE_PLUGINS@
+#endif
+#if !defined(TRUTHGRAM_ENABLE_LUA_PLUGINS)
+#  define TRUTHGRAM_ENABLE_LUA_PLUGINS @TRUTHGRAM_ENABLE_LUA_PLUGINS@
+#endif
+#if !defined(TRUTHGRAM_ENABLE_PYTHON_PLUGINS)
+#  define TRUTHGRAM_ENABLE_PYTHON_PLUGINS @TRUTHGRAM_ENABLE_PYTHON_PLUGINS@
+#endif
+#if !defined(TRUTHGRAM_ENABLE_CLOUD_SYNC)
+#  define TRUTHGRAM_ENABLE_CLOUD_SYNC @TRUTHGRAM_ENABLE_CLOUD_SYNC@
+#endif
+#if !defined(TRUTHGRAM_ENABLE_VOICE_CHANGER)
+#  define TRUTHGRAM_ENABLE_VOICE_CHANGER @TRUTHGRAM_ENABLE_VOICE_CHANGER@
+#endif
+#if !defined(TRUTHGRAM_ENABLE_GHOST)
+#  define TRUTHGRAM_ENABLE_GHOST @TRUTHGRAM_ENABLE_GHOST@
+#endif
+#if !defined(TRUTHGRAM_ENABLE_PHISHING)
+#  define TRUTHGRAM_ENABLE_PHISHING @TRUTHGRAM_ENABLE_PHISHING@
+#endif
+#if !defined(TRUTHGRAM_ENABLE_WEBAPP_AUDIT)
+#  define TRUTHGRAM_ENABLE_WEBAPP_AUDIT @TRUTHGRAM_ENABLE_WEBAPP_AUDIT@
+#endif
+#if !defined(TRUTHGRAM_ENABLE_OSINT)
+#  define TRUTHGRAM_ENABLE_OSINT @TRUTHGRAM_ENABLE_OSINT@
+#endif
+#if !defined(TRUTHGRAM_ENABLE_SCREEN_SHIELD)
+#  define TRUTHGRAM_ENABLE_SCREEN_SHIELD @TRUTHGRAM_ENABLE_SCREEN_SHIELD@
+#endif
+#if !defined(TRUTHGRAM_ENABLE_CHESS)
+#  define TRUTHGRAM_ENABLE_CHESS @TRUTHGRAM_ENABLE_CHESS@
+#endif
+#if !defined(TRUTHGRAM_ENABLE_BOT_STUDIO)
+#  define TRUTHGRAM_ENABLE_BOT_STUDIO @TRUTHGRAM_ENABLE_BOT_STUDIO@
+#endif
+#if !defined(TRUTHGRAM_ENABLE_TERMUX_BRIDGE)
+#  define TRUTHGRAM_ENABLE_TERMUX_BRIDGE @TRUTHGRAM_ENABLE_TERMUX_BRIDGE@
+#endif
+
+// ---- Optional library availability (set by Dependencies.cmake) -------------
+// Kiss FFT drives the Mini Player FFT bars. When absent the Mini Player still
+// builds; the bars render zero-height.
+#if !defined(TRUTHGRAM_HAVE_KISSFFT)
+#  define TRUTHGRAM_HAVE_KISSFFT @TRUTHGRAM_HAVE_KISSFFT@
+#endif
+
+// ---- Platform identification ------------------------------------------------
+#if defined(_WIN32)
+#  define TRUTHGRAM_ON_WINDOWS 1
+#elif defined(__APPLE__)
+#  define TRUTHGRAM_ON_MACOS  1
+#else
+#  define TRUTHGRAM_ON_LINUX  1
+#endif
+
+// ---- Canonical Cyber-Truth palette (RGB triplet struct) -------------------
+// Kept here so any module can reference the brand colors even before the
+// theme engine has parsed the .tdesktop-theme file.
+struct RgbColor {
+    std::uint8_t r = 0, g = 0, b = 0;
+    constexpr std::uint32_t packed() const noexcept {
+        return (std::uint32_t(r) << 16) | (std::uint32_t(g) << 8) | b;
+    }
+    constexpr bool operator==(RgbColor other) const noexcept {
+        return r == other.r && g == other.g && b == other.b;
+    }
+};
+
+namespace brand {
+    // Primary background
+    constexpr RgbColor kObsidian       { 0x0A, 0x0C, 0x0E };
+    constexpr RgbColor kObsidianAlt    { 0x11, 0x14, 0x18 };
+
+    // Primary accent - Electric Lime Green
+    constexpr RgbColor kLime           { 0x39, 0xFF, 0x14 };
+    constexpr RgbColor kLimeDim        { 0x84, 0xCC, 0x16 };
+
+    // Secondary accent - Ice Light Blue
+    constexpr RgbColor kIce            { 0x38, 0xBD, 0xF8 };
+    constexpr RgbColor kIceDim         { 0x7D, 0xD3, 0xFC };
+} // namespace brand
+
+// ---- Runtime config (loaded from SQLCipher + cloud_sync) -------------------
+// A single immutable-once-loaded view of the user's TruthGram toggles. Reads
+// are cheap; writes go through truthgram::Config::set() which persists to the
+// DB and triggers a cloud_sync publish.
+struct RuntimeConfig {
+    bool ghostSuppressReadHistory   = true;
+    bool ghostSuppressReadContents  = true;
+    bool ghostSuppressTyping        = true;
+    bool ghostSuppressPresence      = true;
+    bool screenShieldEnabled        = false;
+    bool screenShieldStreamerMode   = false;
+    bool phishingGuardConfirm       = true;
+    bool phishingGuardVirusTotal    = false;   // requires opt-in API key
+    bool osintOverTor               = true;
+    bool cloudSyncEnabled           = true;
+    bool frostedGlass               = true;
+    bool springScroll               = true;
+    bool miniPlayerDetached         = false;
+    bool voiceChangerLoopback       = false;
+    RgbColor themeAccent            = brand::kLime;
+    RgbColor themeLink              = brand::kIce;
+};
+
+// ---- Path helpers (where the user's TruthGram data lives) -----------------
+const char* userPluginsDir();        // ~/.local/share/TruthGram/plugins
+const char* userDataDir();           // ~/.local/share/TruthGram
+const char* userCacheDir();          // ~/.cache/TruthGram
+
+} // namespace tg::truthgram

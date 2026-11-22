@@ -1,0 +1,20 @@
+// truthgram_version.h.in - rendered by CMake configure_file() into
+// generated/truthgram_version.h. Do not include the .in directly.
+#pragma once
+
+#include <cstdint>
+
+namespace tg::truthgram {
+
+inline constexpr const char* kVersionString = "@PROJECT_VERSION@";
+inline constexpr std::uint32_t kVersionMajor = @PROJECT_VERSION_MAJOR@;
+inline constexpr std::uint32_t kVersionMinor = @PROJECT_VERSION_MINOR@;
+inline constexpr std::uint32_t kVersionPatch = @PROJECT_VERSION_PATCH@;
+
+// Returns a packed 32-bit version comparable with kVersion*Packed.
+inline constexpr std::uint32_t kVersionPacked =
+    (kVersionMajor << 20) | (kVersionMinor << 10) | kVersionPatch;
+
+inline constexpr std::uint32_t kHostApiVersion = 1;
+
+} // namespace tg::truthgram
